@@ -3,7 +3,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/navbar/navbar';
 import { Loader2 } from 'lucide-react';
 
 const Alert = ({ children }: { children: React.ReactNode }) => {

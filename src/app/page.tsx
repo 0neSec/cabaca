@@ -1,32 +1,19 @@
 import React from 'react';
-import Navbar from "@/components/navbar";
-import Image from "next/image";
-import Link from "next/link";
+import Navbar from '@/components/navbar/navbar';
+import HeroBanner from '@/components/navbar/banner';
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       <Navbar />
+      
       {/* Hero Section */}
-      <section className="pt-24 pb-12 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="md:w-1/2">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">Transform Your Business Digital Presence</h1>
-              <p className="text-xl text-gray-600 mb-8">Innovative solutions for modern businesses. Start your journey with us today.</p>
-              <Link href="/services" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                Get Started
-              </Link>
-            </div>
-            <div className="md:w-1/2">
-              <img src="/api/placeholder/600/400" alt="Hero" className="rounded-lg shadow-xl" />
-            </div>
-          </div>
-        </div>
+      <section id="home">
+        <HeroBanner />
       </section>
 
       {/* Services Preview */}
-      <section className="py-16">
+      <section id="services" className="py-16 scroll-mt-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Services</h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -45,7 +32,7 @@ export default function Home() {
       </section>
 
       {/* About Preview */}
-      <section className="py-16 bg-gray-50">
+      <section id="about" className="py-16 bg-gray-50 scroll-mt-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="md:w-1/2">
@@ -56,24 +43,21 @@ export default function Home() {
               <p className="text-gray-600 mb-6">
                 We're a team of passionate professionals dedicated to delivering exceptional digital solutions. With years of experience and a commitment to innovation, we help businesses thrive in the digital age.
               </p>
-              <Link href="/about" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Learn More →
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Contact CTA */}
-      <section className="py-16">
+      <section id="contact" className="py-16 scroll-mt-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Contact us today to discuss how we can help transform your business.
           </p>
-          <Link href="/contact" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             Contact Us
-          </Link>
+          </button>
         </div>
       </section>
     </div>
