@@ -1,46 +1,70 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
-// src/app/api/posts/[id]/route.ts
-import { NextResponse } from 'next/server';
-import { updatePost, deletePost, getPostById } from '@/lib/post';
-
-
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { post, error } = await updatePost(parseInt(params.id), {
-      title: body.title,
-      content: body.content,
-      image: body.image,
-      category_id: body.categoryId,
-      status: body.status,
-    });
+    const url = new URL(request.url)
+    const id = url.pathname.split('/').pop()
 
-    if (error) throw error;
-    return NextResponse.json({ post });
+    if (!id) {
+      console.error('ID is required')
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    }
+
+    const { name, description, status } = await request.json()
+
+    if (!name) {
+      console.error('Name is required')
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    }
+
+    const updates = {
+      name,
+      description,
+      status: status || 0,
+      updated_at: new Date().toISOString(),
+    }
+
+    const { data, error } = await supabase
+      .from('categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+
+    if (error) {
+      console.error('Error updating category:', error.message)
+      return NextResponse.json({ error: 'Failed to update category' }, { status: 500 })
+    }
+
+    return NextResponse.json(data[0], { status: 200 })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update post' },
-      { status: 500 }
-    );
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
-    const { error } = await deletePost(parseInt(params.id));
-    if (error) throw error;
+    const url = new URL(request.url)
+    const id = url.searchParams.get('id')
 
-    return NextResponse.json({ success: true });
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('categories')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', parseInt(id, 10))
+
+    if (error) {
+      console.error('Error soft deleting category:', error.message)
+      return NextResponse.json({ error: 'Failed to delete category' }, { status: 500 })
+    }
+
+    return NextResponse.json({ message: 'Category soft deleted successfully' }, { status: 200 })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete post' },
-      { status: 500 }
-    );
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

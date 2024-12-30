@@ -1,5 +1,7 @@
+// app/users/page.tsx
 'use client'
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import Sidebar from "@/components/sidebar";
 import { User } from '@/types/database';
 
@@ -26,11 +28,18 @@ export default function UsersPage() {
   async function fetchUsers() {
     try {
       const res = await fetch('/api/users');
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      
+      if (!Array.isArray(data?.users)) {
+        throw new Error('Invalid response format');
+      }
+      
       setUsers(data.users);
+      setError('');
     } catch (err) {
-      setError('Failed to load users');
+      setError(err instanceof Error ? err.message : 'Failed to load users');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -46,60 +55,72 @@ export default function UsersPage() {
     setModalMode('edit');
     setEditingUser(user);
     setFormData({
-      name: user.name,
-      email: user.email,
+      name: user?.name || '',
+      email: user?.email || '',
       password: '',
-      role: user.role,
-      status: user.status
+      role: user?.role ?? 1,
+      status: user?.status ?? 1
     });
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     try {
+      const endpoint = modalMode === 'add' ? '/api/users' : `/api/users/${editingUser?.id}`;
+      const method = modalMode === 'add' ? 'POST' : 'PUT';
+      
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      
+      if (data.error) throw new Error(data.error);
+
       if (modalMode === 'add') {
-        const res = await fetch('/api/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        setUsers([data.user, ...users]);
+        setUsers(prev => [data.user, ...prev]);
+        toast.success('User added successfully');
       } else {
-        const res = await fetch(`/api/users/${editingUser?.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        setUsers(users.map(user => 
+        setUsers(prev => prev.map(user => 
           user.id === editingUser?.id ? data.user : user
         ));
+        toast.success('User updated successfully');
       }
+      
       setShowModal(false);
+      setFormData({ name: '', email: '', password: '', role: 1, status: 1 });
     } catch (err) {
-      setError(modalMode === 'add' ? 'Failed to add user' : 'Failed to update user');
+      const errorMessage = err instanceof Error ? err.message : 
+        `Failed to ${modalMode === 'add' ? 'add' : 'update'} user`;
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
-  async function handleDeleteUser(id: number) {
+  const handleDeleteUser = async (id: number) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-      const res = await fetch(`/api/users/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       
-      setUsers(users.filter(user => user.id !== id));
+      setUsers(prev => prev.filter(user => user.id !== id));
+      toast.success('User deleted successfully');
     } catch (err) {
-      setError('Failed to delete user');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete user';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
-  }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -111,9 +132,10 @@ export default function UsersPage() {
             <button
               className="text-gray-600 md:hidden"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle Sidebar"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
               </svg>
             </button>
             <h2 className="text-2xl font-semibold text-gray-700">User Management</h2>
@@ -122,7 +144,7 @@ export default function UsersPage() {
 
         <main className="flex-1 p-8">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
               {error}
             </div>
           )}
@@ -132,7 +154,7 @@ export default function UsersPage() {
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-700">Users</h3>
                 <button 
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
                   onClick={openAddModal}
                 >
                   Add User
@@ -140,9 +162,7 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {loading ? (
-              <div className="p-6 text-center">Loading...</div>
-            ) : (
+            <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -155,42 +175,58 @@ export default function UsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {users.map((user, index) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4">{index + 1}</td>
-                      <td className="px-6 py-4">{user.name}</td>
-                      <td className="px-6 py-4">{user.email}</td>
-                      <td className="px-6 py-4">
-                        {user.role === 0 ? 'Admin' : user.role === 1 ? 'User' : 'Guest'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded ${
-                          user.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {user.status === 1 ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button 
-                          className="text-blue-600 hover:text-blue-800 mr-3"
-                          onClick={() => openEditModal(user)}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="text-red-600 hover:text-red-800"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center">
+                        <div className="flex justify-center items-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : users.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                        No users found
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user, index) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">{index + 1}</td>
+                        <td className="px-6 py-4">{user.name}</td>
+                        <td className="px-6 py-4">{user.email}</td>
+                        <td className="px-6 py-4">
+                          {user.role === 0 ? 'Admin' : user.role === 1 ? 'User' : 'Guest'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-sm font-medium ${
+                            user.status === 1 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {user.status === 1 ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button 
+                            className="text-blue-600 hover:text-blue-800 mr-3 transition-colors"
+                            onClick={() => openEditModal(user)}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
         </main>
 
@@ -211,7 +247,7 @@ export default function UsersPage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -224,7 +260,7 @@ export default function UsersPage() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          className="w-full p-2 border rounded"
+                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           required
                         />
                       </div>
@@ -233,8 +269,9 @@ export default function UsersPage() {
                         <input
                           type="password"
                           onChange={(e) => setFormData({...formData, password: e.target.value})}
-                          className="w-full p-2 border rounded"
-                          required
+                          value={formData.password}
+                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required={modalMode === 'add'}
                         />
                       </div>
                     </>
@@ -245,7 +282,7 @@ export default function UsersPage() {
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({...formData, role: Number(e.target.value)})}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value={0}>Admin</option>
                       <option value={1}>User</option>
@@ -253,32 +290,30 @@ export default function UsersPage() {
                     </select>
                   </div>
 
-                  {modalMode === 'edit' && (
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Status</label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: Number(e.target.value)})}
-                        className="w-full p-2 border rounded"
-                      >
-                        <option value={1}>Active</option>
-                        <option value={0}>Inactive</option>
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: Number(e.target.value)})}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value={1}>Active</option>
+                      <option value={0}>Inactive</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                   >
                     {modalMode === 'add' ? 'Add User' : 'Save Changes'}
                   </button>

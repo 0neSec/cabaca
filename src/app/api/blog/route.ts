@@ -1,54 +1,66 @@
-// src/app/api/posts/route.ts
-import { NextResponse } from 'next/server';
-import { createPost, getPosts } from '@/lib/post';
+import { supabase } from '@/lib/supabase'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const categoryId = searchParams.get('categoryId');
-    const status = searchParams.get('status');
-    const page = searchParams.get('page');
-    const limit = searchParams.get('limit');
+interface Post {
+  id: number
+  title: string
+  content: string
+  image?: string
+  status: number
+  user_id: number
+  category_id: number
+}
 
-    const options = {
-      userId: userId ? parseInt(userId) : undefined,
-      categoryId: categoryId ? parseInt(categoryId) : undefined,
-      status: status ? parseInt(status) : undefined,
-      page: page ? parseInt(page) : undefined,
-      limit: limit ? parseInt(limit) : undefined,
-    };
+export async function GET() {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      users (id, name, email),
+      categories (id, name)
+    `)
 
-    const { posts, error } = await getPosts(options);
-    if (error) throw error;
-
-    return NextResponse.json({ posts });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch posts' },
-      { status: 500 }
-    );
+  if (error) {
+    console.error('Error fetching posts:', error.message)
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
   }
+
+  return NextResponse.json(data, { status: 200 })
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { post, error } = await createPost(
-      body.title,
-      body.content,
-      body.userId,
-      body.categoryId,
-      body.image,
-      body.status
-    );
-    
-    if (error) throw error;
-    return NextResponse.json({ post });
+    const { title, content, image, status, user_id, category_id } = await request.json()
+
+    if (!title || !content || !user_id || !category_id) {
+      console.error('Missing required fields')
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const newPost = {
+      title,
+      content,
+      image,
+      status: status || 0,
+      user_id: parseInt(user_id, 10),
+      category_id: parseInt(category_id, 10),
+      created_at: new Date().toISOString(),
+    }
+
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([newPost])
+      .select()
+
+    if (error) {
+      console.error('Error creating post:', error.message)
+      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    }
+
+    return NextResponse.json(data[0], { status: 201 })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create post' },
-      { status: 500 }
-    );
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
