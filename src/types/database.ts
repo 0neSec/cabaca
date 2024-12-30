@@ -8,3 +8,34 @@ export interface User {
   created_at: string;
   updated_at: string;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string | null;
+  status: 0 | 1;
+  created_at: string;
+  updated_at: string;
+}
+
+
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  user_id: number;
+  category_id: number | null;
+  status: number;
+  created_at: string;
+  updated_at: string;
+  image:string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  category?: {
+    id: number;
+    name: string;
+  };
+}

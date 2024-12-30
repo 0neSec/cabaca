@@ -1,55 +1,32 @@
 import React from 'react';
 import Link from "next/link";
-import Navbar from '@/components/navbar/navbar';
-import HeroBanner from '@/components/navbar/banner';
+import Navbar from '@/components/navbar';
+import HeroBanner from '@/components/banner';
+import BlogPreview from '@/components/blog';
+import ProgramPreview from '@/components/program';
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       <Navbar />
       <HeroBanner />
-
-      {/* Program Preview */}
-      <section className="py-8 sm:py-12 md:py-16">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Program Belajar Kami</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            {[
-              {
-                title: "Matematika", 
-                desc: "Program belajar matematika yang menyenangkan dengan metode pembelajaran inovatif"
-              },
-              {
-                title: "Bahasa Inggris", 
-                desc: "Tingkatkan kemampuan berbahasa Inggris dengan native dan non-native speaker berpengalaman"
-              },
-              {
-                title: "Sains", 
-                desc: "Pembelajaran sains interaktif dengan praktikum dan eksperimen yang menarik"
-              }
-            ].map((program, i) => (
-              <div key={i} className="p-4 sm:p-6 border rounded-lg hover:shadow-lg transition-all duration-300 bg-white">
-                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{program.title}</h3>
-                <p className="text-gray-600 text-sm sm:text-base">{program.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      <BlogPreview />
+      <ProgramPreview />
       {/* Keunggulan Preview */}
       <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
             <div className="w-full md:w-1/2">
               <img 
-                src="/api/placeholder/500/300" 
+                src="assets/Calistung.jpg" 
                 alt="Suasana Belajar" 
                 className="rounded-lg w-full h-auto object-cover shadow-md"
               />
             </div>
             <div className="w-full md:w-1/2 mt-6 md:mt-0">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Mengapa Bimbel Cabaca?</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
+                Mengapa Bimbel Cabaca?
+              </h2>
               <p className="text-gray-600 text-sm sm:text-base mb-6">
                 Bimbel Cabaca hadir dengan metode pembelajaran yang efektif dan menyenangkan. 
                 Didukung oleh tim pengajar profesional dan berpengalaman, kami berkomitmen untuk 
@@ -67,7 +44,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Daftar CTA */}
       <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 sm:px-6 text-center">

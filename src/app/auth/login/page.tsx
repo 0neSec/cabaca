@@ -3,7 +3,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '@/components/navbar/navbar';
+import Navbar from '@/components/navbar';
 import { Loader2 } from 'lucide-react';
 
 const Alert = ({ children }: { children: React.ReactNode }) => {
@@ -35,17 +35,14 @@ const LoginPage = () => {
     password: ''
   });
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear error when user starts typing
     if (error) setError('');
   };
 
-  // Basic email validation
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
@@ -54,13 +51,11 @@ const LoginPage = () => {
     event.preventDefault();
     setError('');
 
-    // Validate email
     if (!isValidEmail(formData.email)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
       return;
@@ -82,15 +77,24 @@ const LoginPage = () => {
         throw new Error(error.message);
       }
 
+      const { user } = await res.json();
+      
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // Optional: Store authentication token if you're using one
+      if (user.token) {
+        localStorage.setItem('token', user.token);
+      }
+
       router.push('/');
-      router.refresh(); // Refresh the page to update navigation state
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <Navbar />
