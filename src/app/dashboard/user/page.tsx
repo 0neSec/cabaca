@@ -1,4 +1,3 @@
-// app/users/page.tsx
 'use client'
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
@@ -35,7 +34,14 @@ export default function UsersPage() {
         throw new Error('Invalid response format');
       }
       
-      setUsers(data.users);
+      const validUsers = data.users.filter((user: any): user is User => {
+        return user && typeof user === 'object' && 
+               'id' in user && 
+               'name' in user && 
+               'email' in user;
+      });
+      
+      setUsers(validUsers);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load users');
@@ -48,18 +54,24 @@ export default function UsersPage() {
   const openAddModal = () => {
     setModalMode('add');
     setFormData({ name: '', email: '', password: '', role: 1, status: 1 });
+    setEditingUser(null);
     setShowModal(true);
   };
 
   const openEditModal = (user: User) => {
+    if (!user || !user.id) {
+      toast.error('Invalid user data');
+      return;
+    }
+    
     setModalMode('edit');
     setEditingUser(user);
     setFormData({
-      name: user?.name || '',
-      email: user?.email || '',
+      name: user.name || '',
+      email: user.email || '',
       password: '',
-      role: user?.role ?? 1,
-      status: user?.status ?? 1
+      role: typeof user.role === 'number' ? user.role : 1,
+      status: typeof user.status === 'number' ? user.status : 1
     });
     setShowModal(true);
   };
@@ -69,6 +81,10 @@ export default function UsersPage() {
     setError('');
     
     try {
+      if (modalMode === 'edit' && !editingUser?.id) {
+        throw new Error('Invalid user ID for editing');
+      }
+
       const endpoint = modalMode === 'add' ? '/api/users' : `/api/users/${editingUser?.id}`;
       const method = modalMode === 'add' ? 'POST' : 'PUT';
       
@@ -78,23 +94,48 @@ export default function UsersPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       
-      if (data.error) throw new Error(data.error);
-
       if (modalMode === 'add') {
-        setUsers(prev => [data.user, ...prev]);
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid response format');
+        }
+        
+        setUsers(prev => {
+          const newUser = {
+            id: data.id,
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+            status: formData.status,
+            ...data
+          };
+          return [newUser, ...prev];
+        });
         toast.success('User added successfully');
       } else {
         setUsers(prev => prev.map(user => 
-          user.id === editingUser?.id ? data.user : user
+          user.id === editingUser?.id 
+            ? {
+                ...user,
+                name: formData.name,
+                role: formData.role,
+                status: formData.status,
+                ...data
+              }
+            : user
         ));
         toast.success('User updated successfully');
       }
       
       setShowModal(false);
       setFormData({ name: '', email: '', password: '', role: 1, status: 1 });
+      setEditingUser(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 
         `Failed to ${modalMode === 'add' ? 'add' : 'update'} user`;
@@ -104,7 +145,7 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    if (!id || !confirm('Are you sure you want to delete this user?')) return;
     
     try {
       const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
