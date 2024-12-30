@@ -26,7 +26,7 @@ const HeroBanner = () => {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight animate-slide-up">
               Wujudkan Mimpi{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                Bersama Cabaca
+                Bersama Cabaca Al-Mughni
               </span>
             </h1>
             

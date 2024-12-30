@@ -58,6 +58,18 @@ export default function RegistrationPage() {
     fetchRegistrations();
   }, []);
 
+  const programs: string[] = [
+    "PAUD & TK",
+    "Sekolah Dasar (SD)",
+    "SMP & SMA",
+  ];
+
+  const gradeOptions: { [key: string]: string[] } = {
+    "PAUD & TK": ["PAUD A", "PAUD B", "TK A", "TK B"],
+    "Sekolah Dasar (SD)": ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"],
+    "SMP & SMA": ["Kelas 7", "Kelas 8", "Kelas 9", "Kelas 10", "Kelas 11", "Kelas 12"],
+  };
+
   async function fetchRegistrations() {
     try {
       const res = await fetch("/api/pendaftaran");
@@ -143,6 +155,15 @@ export default function RegistrationPage() {
     }
   };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      setFormData({
+        ...formData,
+        [name]: value,
+        ...(name === 'selected_program' && { grade: '' }),
+      });
+    };
+    
   const handleDeleteRegistration = async (id: number) => {
     if (!confirm("Are you sure you want to delete this registration?")) return;
 
@@ -291,28 +312,48 @@ export default function RegistrationPage() {
                       required
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-1">Program</label>
-                    <input
-                      type="text"
-                      value={formData.selected_program}
-                      onChange={(e) => setFormData({ ...formData, selected_program: e.target.value })}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Grade</label>
-                    <input
-                      type="text"
-                      value={formData.grade}
-                      onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
+                <label htmlFor="selected_program" className="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Program
+                </label>
+                <select
+                  id="selected_program"
+                  name="selected_program"
+                  value={formData.selected_program}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Pilih program</option>
+                  {programs.map((program, i) => (
+                    <option key={i} value={program}>
+                      {program}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {formData.selected_program && (
+                <div>
+                  <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-2">
+                    Pilih Kelas
+                  </label>
+                  <select
+                    id="grade"
+                    name="grade"
+                    value={formData.grade}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Pilih kelas</option>
+                    {gradeOptions[formData.selected_program]?.map((grade, i) => (
+                      <option key={i} value={grade}>
+                        {grade}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
                   <div>
                     <label className="block text-sm font-medium mb-1">School Name</label>
