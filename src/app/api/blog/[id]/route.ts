@@ -3,22 +3,6 @@
 import { NextResponse } from 'next/server';
 import { updatePost, deletePost, getPostById } from '@/lib/post';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { post, error } = await getPostById(parseInt(params.id));
-    if (error) throw error;
-
-    return NextResponse.json({ post });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch post' },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(
   request: Request,

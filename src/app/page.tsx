@@ -18,7 +18,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
             <div className="w-full md:w-1/2">
               <img 
-                src="assets/Calistung.jpg" 
+                src="/assets/Calistung.jpg" 
                 alt="Suasana Belajar" 
                 className="rounded-lg w-full h-auto object-cover shadow-md"
               />
