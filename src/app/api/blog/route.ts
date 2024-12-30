@@ -11,8 +11,13 @@ interface Post {
   category_id: number
 }
 
-export async function GET() {
-  const { data, error } = await supabase
+export async function GET(request: Request) {
+  // Get URL parameters
+  const url = new URL(request.url)
+  const limit = url.searchParams.get('limit')
+  const status = url.searchParams.get('status')
+
+  let query = supabase
     .from('posts')
     .select(`
       *,
@@ -20,12 +25,24 @@ export async function GET() {
       categories (id, name)
     `)
 
+  // Add filters if provided
+  if (status) {
+    query = query.eq('status', parseInt(status, 10))
+  }
+  
+  if (limit) {
+    query = query.limit(parseInt(limit, 10))
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false })
+
   if (error) {
     console.error('Error fetching posts:', error.message)
     return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
   }
 
-  return NextResponse.json(data, { status: 200 })
+  // Return in the format expected by the component
+  return NextResponse.json({ posts: data }, { status: 200 })
 }
 
 export async function POST(request: Request) {
@@ -57,10 +74,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
     }
 
-    return NextResponse.json(data[0], { status: 201 })
+    return NextResponse.json({ post: data[0] }, { status: 201 })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
-
