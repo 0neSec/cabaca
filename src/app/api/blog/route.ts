@@ -47,13 +47,25 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { title, content, image, status, user_id, category_id } = await request.json()
+    const { title, content, image, status, user_id, category_id } = await request.json();
 
-    if (!title || !content || !user_id || !category_id) {
-      console.error('Missing required fields')
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    // Daftar kolom yang wajib ada
+    const requiredFields = { title, content, user_id, category_id };
+
+    // Periksa kolom yang hilang atau kosong
+    const missingFields = Object.entries(requiredFields)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      return NextResponse.json(
+        { error: 'Missing required fields', missing: missingFields },
+        { status: 400 }
+      );
     }
 
+    // Data untuk membuat post baru
     const newPost = {
       title,
       content,
@@ -62,21 +74,19 @@ export async function POST(request: Request) {
       user_id: parseInt(user_id, 10),
       category_id: parseInt(category_id, 10),
       created_at: new Date().toISOString(),
-    }
+    };
 
-    const { data, error } = await supabase
-      .from('posts')
-      .insert([newPost])
-      .select()
+    // Insert ke Supabase
+    const { data, error } = await supabase.from('posts').insert([newPost]).select();
 
     if (error) {
-      console.error('Error creating post:', error.message)
-      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+      console.error('Error creating post:', error.message);
+      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
     }
 
-    return NextResponse.json({ post: data[0] }, { status: 201 })
+    return NextResponse.json({ post: data[0] }, { status: 201 });
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    console.error('Unexpected error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -11,17 +11,21 @@ interface Category {
 }
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
+  const { data, error } = await supabase.from('categories').select('*');
 
   if (error) {
-    console.error('Error fetching categories:', error.message)
-    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 })
+    console.error('Error fetching categories:', error.message);
+    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 200 })
+  if (!data || data.length === 0) {
+    console.warn('No categories found');
+    return NextResponse.json([], { status: 200 });
+  }
+
+  return NextResponse.json(data, { status: 200 });
 }
+
 
 export async function POST(request: Request) {
   try {

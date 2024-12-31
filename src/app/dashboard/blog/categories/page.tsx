@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { useState, useEffect } from 'react';
 import Sidebar from "@/components/sidebar";
 
@@ -29,18 +29,21 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
-  async function fetchCategories() {
+  const fetchCategories = async () => {
     try {
       const res = await fetch('/api/categories');
+      if (!res.ok) throw new Error('Failed to fetch categories');
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setCategories(data.categories);
+      setCategories(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error(err);
       setError('Failed to load categories');
     } finally {
       setLoading(false);
     }
-  }
+  };
+  
+  
 
   const openAddModal = () => {
     setModalMode('add');
@@ -206,55 +209,58 @@ export default function CategoriesPage() {
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Name
+                    </label>
                     <input
                       type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full p-2 border rounded"
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Description
+                    </label>
                     <textarea
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      className="w-full p-2 border rounded"
-                      rows={3}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
-                    />
+                    ></textarea>
                   </div>
 
-                  {modalMode === 'edit' && (
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Status</label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: Number(e.target.value)})}
-                        className="w-full p-2 border rounded"
-                      >
-                        <option value={1}>Active</option>
-                        <option value={0}>Inactive</option>
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Status
+                    </label>
+                    <select
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) })}
+                    >
+                      <option value={1}>Active</option>
+                      <option value={0}>Inactive</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="mt-6 flex justify-end space-x-3">
+                <div className="mt-6 flex justify-end">
                   <button
                     type="button"
+                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-3 hover:bg-gray-400"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                   >
-                    {modalMode === 'add' ? 'Add Category' : 'Save Changes'}
+                    {modalMode === 'add' ? 'Add Category' : 'Update Category'}
                   </button>
                 </div>
               </form>
@@ -265,3 +271,4 @@ export default function CategoriesPage() {
     </div>
   );
 }
+
