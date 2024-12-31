@@ -64,7 +64,6 @@ export default function Navbar() {
     { href: "/", label: "Beranda" },
     { href: "/tentang", label: "Tentang" },
     { href: "/program", label: "Program" },
-    { href: "/kontak", label: "Kontak" },
   ];
 
   // Get navigation items based on user role

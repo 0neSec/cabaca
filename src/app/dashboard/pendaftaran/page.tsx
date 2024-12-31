@@ -192,7 +192,7 @@ export default function RegistrationPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"/>
               </svg>
             </button>
-            <h2 className="text-2xl font-semibold text-gray-700">Registration Management</h2>
+            <h2 className="text-2xl font-semibold text-gray-700">Manajemen Pendaftaran</h2>
           </div>
         </header>
 
@@ -200,12 +200,12 @@ export default function RegistrationPage() {
           <div className="bg-white shadow-lg rounded-lg overflow-hidden">
             <div className="p-6 border-b">
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-gray-700">Registrations</h3>
+                <h3 className="text-xl font-semibold text-gray-700">Daftar Pendaftaran</h3>
                 <button
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                   onClick={openAddModal}
                 >
-                  Add Registration
+                  Tambah Pendaftaran
                 </button>
               </div>
             </div>
@@ -220,11 +220,11 @@ export default function RegistrationPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Siswa</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Orang Tua</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Program</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kelas</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -240,13 +240,13 @@ export default function RegistrationPage() {
                             className="text-blue-600 hover:text-blue-800 mr-3"
                             onClick={() => openEditModal(registration)}
                           >
-                            Edit
+                            Ubah
                           </button>
                           <button
                             className="text-red-600 hover:text-red-800"
                             onClick={() => handleDeleteRegistration(registration.id)}
                           >
-                            Delete
+                            Hapus
                           </button>
                         </td>
                       </tr>
@@ -263,14 +263,14 @@ export default function RegistrationPage() {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-full overflow-y-auto">
               <div className="p-6 border-b">
                 <h3 className="text-xl font-semibold">
-                  {modalMode === "add" ? "Add New Registration" : "Edit Registration"}
+                  {modalMode === "add" ? "Tambah Pendaftaran Baru" : "Ubah Pendaftaran"}
                 </h3>
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Student Name</label>
+                    <label className="block text-sm font-medium mb-1">Nama Siswa</label>
                     <input
                       type="text"
                       value={formData.student_name}
@@ -281,7 +281,7 @@ export default function RegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Parent Name</label>
+                    <label className="block text-sm font-medium mb-1">Nama Orang Tua</label>
                     <input
                       type="text"
                       value={formData.parent_name}
@@ -303,7 +303,7 @@ export default function RegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <label className="block text-sm font-medium mb-1">Telepon</label>
                     <input
                       type="tel"
                       value={formData.phone}
@@ -312,51 +312,49 @@ export default function RegistrationPage() {
                       required
                     />
                   </div>
-                  <div>
-                <label htmlFor="selected_program" className="block text-sm font-medium text-gray-700 mb-2">
-                  Pilih Program
-                </label>
-                <select
-                  id="selected_program"
-                  name="selected_program"
-                  value={formData.selected_program}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Pilih program</option>
-                  {programs.map((program, i) => (
-                    <option key={i} value={program}>
-                      {program}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {formData.selected_program && (
-                <div>
-                  <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-2">
-                    Pilih Kelas
-                  </label>
-                  <select
-                    id="grade"
-                    name="grade"
-                    value={formData.grade}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">Pilih kelas</option>
-                    {gradeOptions[formData.selected_program]?.map((grade, i) => (
-                      <option key={i} value={grade}>
-                        {grade}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">School Name</label>
+                    <label htmlFor="selected_program" className="block text-sm font-medium text-gray-700 mb-2">
+                      Program
+                    </label>
+                    <select
+                      id="selected_program"
+                      name="selected_program"
+                      value={formData.selected_program}
+                      onChange={handleChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Pilih program</option>
+                      {programs.map((program, i) => (
+                        <option key={i} value={program}>{program}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {formData.selected_program && (
+                    <div>
+                      <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-2">
+                        Kelas
+                      </label>
+                      <select
+                        id="grade"
+                        name="grade"
+                        value={formData.grade}
+                        onChange={handleChange}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="">Pilih kelas</option>
+                        {gradeOptions[formData.selected_program]?.map((grade, i) => (
+                          <option key={i} value={grade}>{grade}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Nama Sekolah</label>
                     <input
                       type="text"
                       value={formData.school_name}
@@ -367,7 +365,7 @@ export default function RegistrationPage() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-1">Address</label>
+                    <label className="block text-sm font-medium mb-1">Alamat</label>
                     <textarea
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -378,7 +376,7 @@ export default function RegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">District</label>
+                    <label className="block text-sm font-medium mb-1">Kecamatan</label>
                     <input
                       type="text"
                       value={formData.district}
@@ -389,7 +387,7 @@ export default function RegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">City</label>
+                    <label className="block text-sm font-medium mb-1">Kota</label>
                     <input
                       type="text"
                       value={formData.city}
@@ -406,22 +404,22 @@ export default function RegistrationPage() {
                     onClick={() => setShowModal(false)}
                     className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
                   >
-                    Cancel
+                    Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center"
                   >
-{submitting ? (
+                    {submitting ? (
                       <>
                         <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                        Submitting...
+                        Memproses...
                       </>
                     ) : modalMode === "add" ? (
-                      "Add Registration"
+                      "Tambah Pendaftaran"
                     ) : (
-                      "Update Registration"
+                      "Perbarui Pendaftaran"
                     )}
                   </button>
                 </div>
